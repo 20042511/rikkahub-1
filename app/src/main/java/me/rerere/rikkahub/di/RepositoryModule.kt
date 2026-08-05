@@ -4,6 +4,14 @@ import android.content.Context
 import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.files.SkillManager
+import me.rerere.rikkahub.data.files.skills.SkillFormatAdapter
+import me.rerere.rikkahub.data.files.skills.readers.AnthropicSkillReader
+import me.rerere.rikkahub.data.files.skills.readers.ClineRuleReader
+import me.rerere.rikkahub.data.files.skills.readers.CopilotInstructionReader
+import me.rerere.rikkahub.data.files.skills.readers.CursorRuleReader
+import me.rerere.rikkahub.data.files.skills.readers.FlatMarkdownReader
+import me.rerere.rikkahub.data.files.skills.readers.KiroSteeringReader
+import me.rerere.rikkahub.data.files.skills.readers.WindsurfRuleReader
 import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.rikkahub.data.repository.FavoriteRepository
 import me.rerere.rikkahub.data.repository.FolderRepository
@@ -82,5 +90,22 @@ val repositoryModule = module {
 
     single {
         SkillManager(get(), get())
+    }
+
+    // 格式适配器：Reader 按优先级排序，命名型(.mdc/.cursorrules/SKILL.md/CLAUDE.md)在前，
+    // 路径型(.clinerules/.windsurf/.kiro/.github)在后；AnthropicSkillReader 兜底处理含
+    // frontmatter 但无 Reader 认领的文件
+    single {
+        SkillFormatAdapter(
+            readers = listOf(
+                AnthropicSkillReader(),
+                CursorRuleReader(),
+                FlatMarkdownReader(),
+                ClineRuleReader(),
+                WindsurfRuleReader(),
+                KiroSteeringReader(),
+                CopilotInstructionReader(),
+            ),
+        )
     }
 }

@@ -20,7 +20,12 @@ pluginManagement {
     }
 }
 plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+    // SANDBOX-WORKAROUND: foojay-resolver-convention temporarily disabled —
+    // plugins.gradle.org is unreachable in this sandbox. Auto-download is also
+    // disabled via -Porg.gradle.java.installations.auto-download=false, and the
+    // JetBrains JDK 21 toolchain is provided via -Porg.gradle.java.installations.paths.
+    // Restore this plugin and remove the workaround before committing.
+    // id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)

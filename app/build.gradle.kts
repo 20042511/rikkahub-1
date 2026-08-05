@@ -216,6 +216,9 @@ dependencies {
     // java-diff-utils (unified diff)
     implementation(libs.diffutils)
 
+    // snakeyaml (skill frontmatter / format adapter)
+    implementation(libs.snakeyaml)
+
     // coil
     implementation(libs.coil.compose)
     implementation(libs.coil.gif)

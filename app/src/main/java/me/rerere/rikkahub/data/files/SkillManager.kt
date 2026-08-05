@@ -6,6 +6,8 @@ import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.rerere.rikkahub.data.datastore.SettingsStore
+import me.rerere.rikkahub.data.files.skills.ImportedSkill
+import me.rerere.rikkahub.data.files.skills.NativeSkillWriter
 
 class SkillManager(
     private val context: Context,
@@ -13,6 +15,7 @@ class SkillManager(
 ) {
     companion object {
         private const val TAG = "SkillManager"
+        private const val DESCRIPTION_FALLBACK = "(no description)"
     }
 
     fun getSkillsDir(): File {
@@ -186,12 +189,30 @@ class SkillManager(
         return null
     }
 
+    /**
+     * 把 [ImportedSkill] 序列化为原生 skill 文件并原子落盘。
+     *
+     * 用于格式适配器导入流程：Reader 产出 ImportedSkill → NativeSkillWriter 转 SKILL.md + 附带资源 → 原子写入。
+     *
+     * @return 落盘后的 [SkillMetadata]；失败(目录冲突/写盘失败)返回 null
+     */
+    fun importSkill(imported: ImportedSkill): SkillMetadata? {
+        val files = NativeSkillWriter.toSkillFiles(imported)
+        if (!saveSkillFilesAtomically(imported.name, files)) {
+            return null
+        }
+        val skillDir = resolveSkillDir(imported.name) ?: return null
+        return parseSkillFile(skillDir.resolve("SKILL.md"), skillDir)
+    }
+
     private fun parseSkillFile(skillFile: File, skillDir: File): SkillMetadata? {
         return runCatching {
             val content = skillFile.readText()
             val frontmatter = SkillFrontmatterParser.parse(content)
             val name = frontmatter["name"]?.takeIf { it.isNotBlank() } ?: return null
-            val description = frontmatter["description"]?.takeIf { it.isNotBlank() } ?: return null
+            // description 缺失时降级为占位串：避免手动编辑 SKILL.md 误删 description 后
+            // 技能从列表消失(用户感知为"丢技能")
+            val description = frontmatter["description"]?.takeIf { it.isNotBlank() } ?: DESCRIPTION_FALLBACK
             SkillMetadata(
                 name = name,
                 description = description,
