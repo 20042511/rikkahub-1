@@ -379,7 +379,9 @@ class SkillFormatAdapterTest {
     }
 
     @Test
-    fun `import Kiro maps inclusion fileMatch to allowedTools`() {
+    fun `import Kiro maps inclusion fileMatch with fileMatchPattern to allowedTools`() {
+        // 官方字段是 fileMatchPattern(单数,可 string 或 string[])
+        // 见 https://kiro.dev/docs/steering/
         val input = RawSkillInput(
             fileName = "api.md",
             relativePath = ".kiro/steering/api.md",
@@ -387,7 +389,7 @@ class SkillFormatAdapterTest {
                 ---
                 description: api rules
                 inclusion: fileMatch
-                globs:
+                fileMatchPattern:
                   - "**/api/**/*.go"
                 ---
                 body
@@ -399,6 +401,47 @@ class SkillFormatAdapterTest {
         val skill = skills.first()
         assertEquals(listOf("**/api/**/*.go"), skill.allowedTools)
         assertEquals(null, skill.compatibility)
+    }
+
+    @Test
+    fun `import Kiro accepts string fileMatchPattern`() {
+        val input = RawSkillInput(
+            fileName = "components.md",
+            relativePath = ".kiro/steering/components.md",
+            content = """
+                ---
+                description: component rules
+                inclusion: fileMatch
+                fileMatchPattern: "components/**/*.tsx"
+                ---
+                body
+            """.trimIndent(),
+        )
+
+        val skills = adapter.import(input)
+
+        assertEquals(listOf("components/**/*.tsx"), skills.first().allowedTools)
+    }
+
+    @Test
+    fun `import Kiro falls back to globs when fileMatchPattern absent`() {
+        // 兼容回落：第三方工具误用 globs 字段时仍能解析
+        val input = RawSkillInput(
+            fileName = "legacy.md",
+            relativePath = ".kiro/steering/legacy.md",
+            content = """
+                ---
+                description: legacy
+                inclusion: fileMatch
+                globs: "**/*.ts"
+                ---
+                body
+            """.trimIndent(),
+        )
+
+        val skills = adapter.import(input)
+
+        assertEquals(listOf("**/*.ts"), skills.first().allowedTools)
     }
 
     @Test

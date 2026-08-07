@@ -7,14 +7,16 @@ import me.rerere.rikkahub.data.files.skills.SkillSourceFormat
 /**
  * Kiro Steering：`.kiro/steering/*.md`。
  *
- * frontmatter：
- * - inclusion: always | fileMatch | manual
- * - globs: inclusion=fileMatch 时的文件匹配
+ * frontmatter(官方字段名，见 https://kiro.dev/docs/steering/）：
+ * - inclusion: always | fileMatch | manual | auto
+ * - fileMatchPattern: inclusion=fileMatch 时的 glob(单字符串或字符串数组)
+ * - domain: 可选，组织分类用(不参与触发)
  *
  * 映射：
  * - inclusion=always → compatibility="always"
- * - inclusion=fileMatch + globs → allowedTools
+ * - inclusion=fileMatch + fileMatchPattern → allowedTools
  * - inclusion=manual → compatibility="manual-only"
+ * - inclusion=auto → compatibility=null(由 AI 决定，无固定标记)
  */
 class KiroSteeringReader : SkillReader {
     override val sourceFormat: SkillSourceFormat = SkillSourceFormat.KIRO_STEERING
@@ -30,15 +32,17 @@ class KiroSteeringReader : SkillReader {
         val name = SkillNames.fromFileName(input.fileName)
         val description = (fm["description"] as? String)?.trim().orEmpty()
         val inclusion = (fm["inclusion"] as? String)?.trim().orEmpty()
-        val globs = ReaderHelpers.parseGlobsToList(fm["globs"])
+        // 官方字段是 fileMatchPattern(单数)；兼容回落到 globs 以防第三方误用
+        val patterns = ReaderHelpers.parseGlobsToList(fm["fileMatchPattern"])
+            .ifEmpty { ReaderHelpers.parseGlobsToList(fm["globs"]) }
 
         val compatibility = when (inclusion.lowercase()) {
             "always" -> "always"
             "manual" -> "manual-only"
-            "filematch", "" -> null
+            "filematch", "auto", "" -> null
             else -> null
         }
-        val allowedTools = if (inclusion.lowercase() == "filematch") globs else emptyList()
+        val allowedTools = if (inclusion.lowercase() == "filematch") patterns else emptyList()
 
         val finalDescription = if (description.isBlank()) {
             ReaderHelpers.deriveDescription(body, "Kiro steering $name")
