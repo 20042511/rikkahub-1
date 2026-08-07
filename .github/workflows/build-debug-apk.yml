@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write   # 发布 Release 需要写权限
 
     steps:
       - name: Determine ref
@@ -83,3 +83,16 @@ jobs:
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Publish APK to GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: success()
+        with:
+          tag_name: nightly-debug
+          name: Nightly Debug Build
+          prerelease: true
+          body: |
+            自动构建（commit `${{ github.sha }}`，分支 `${{ steps.ref.outputs.ref }}`）
+
+            > ⚠️ Debug 构建，debug 签名，仅供测试。覆盖安装时需先卸载旧版（签名不同会冲突）。
+          files: app/build/outputs/apk/debug/*.apk
