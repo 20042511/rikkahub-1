@@ -9,6 +9,7 @@ import me.rerere.rikkahub.data.files.skills.readers.KiroSteeringReader
 import me.rerere.rikkahub.data.files.skills.readers.RawSkillInput
 import me.rerere.rikkahub.data.files.skills.readers.WindsurfRuleReader
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -192,7 +193,33 @@ class SkillFormatAdapterTest {
     }
 
     @Test
-    fun `import Cursor mdc maps globs to allowedTools and alwaysApply to compatibility`() {
+    fun `import Anthropic maps disable-model-invocation to manual-only and warns on user-invocable false`() {
+        val input = RawSkillInput(
+            fileName = "SKILL.md",
+            relativePath = "bg-skill/SKILL.md",
+            content = """
+                ---
+                name: bg-skill
+                description: background skill
+                disable-model-invocation: true
+                user-invocable: false
+                ---
+                body
+            """.trimIndent(),
+        )
+
+        val skills = adapter.import(input)
+
+        val skill = skills.first()
+        // disable-model-invocation → manual-only(原生支持)
+        assertEquals("manual-only", skill.compatibility)
+        // user-invocable=false 原生不支持 background-only，不写入 compatibility，改记 warning
+        assertTrue(skill.warnings.any { it.contains("user-invocable=false") })
+        assertFalse(skill.compatibility?.contains("background-only") == true)
+    }
+
+    @Test
+    fun `import Cursor mdc with alwaysApply true clears allowedTools and sets compatibility always`() {
         val input = RawSkillInput(
             fileName = "vue.mdc",
             relativePath = ".cursor/rules/vue.mdc",
@@ -211,8 +238,34 @@ class SkillFormatAdapterTest {
         assertEquals(1, skills.size)
         val skill = skills.first()
         assertEquals("vue", skill.name)
-        assertEquals(listOf("src/**/*.vue"), skill.allowedTools)
+        // alwaysApply=true 时常驻注入，globs 不参与触发，应清空
+        assertEquals(emptyList<String>(), skill.allowedTools)
         assertEquals("always", skill.compatibility)
+        assertTrue(skill.warnings.any { it.contains("alwaysApply=true") })
+    }
+
+    @Test
+    fun `import Cursor mdc with alwaysApply false keeps globs as allowedTools`() {
+        val input = RawSkillInput(
+            fileName = "vue.mdc",
+            relativePath = ".cursor/rules/vue.mdc",
+            content = """
+                ---
+                description: Vue rules
+                globs: src/**/*.vue
+                alwaysApply: false
+                ---
+                body
+            """.trimIndent(),
+        )
+
+        val skills = adapter.import(input)
+
+        assertEquals(1, skills.size)
+        val skill = skills.first()
+        // alwaysApply=false 时按需触发，globs 映射到 allowedTools
+        assertEquals(listOf("src/**/*.vue"), skill.allowedTools)
+        assertEquals(null, skill.compatibility)
     }
 
     @Test

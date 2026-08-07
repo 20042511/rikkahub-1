@@ -56,6 +56,8 @@ class CursorRuleReader : SkillReader {
         val globs = ReaderHelpers.parseGlobsToList(fm["globs"])
         val alwaysApply = (fm["alwaysApply"] as? Boolean) == true
         val compatibility = if (alwaysApply) "always" else null
+        // Cursor 语义：alwaysApply=true 时常驻注入，globs 不参与触发，应清空避免误导
+        val allowedTools = if (alwaysApply) emptyList() else globs
 
         val finalDescription = if (description.isBlank()) {
             ReaderHelpers.deriveDescription(body, "Cursor rule $name")
@@ -69,7 +71,7 @@ class CursorRuleReader : SkillReader {
         val warnings = mutableListOf<String>()
         if (description.isBlank()) warnings += "description 缺失，已从正文首行派生"
         if (globs.isNotEmpty() && alwaysApply) {
-            warnings += "alwaysApply=true 时 globs 被忽略(Cursor 行为)，已按 always 处理"
+            warnings += "alwaysApply=true 时 globs 被忽略(Cursor 常驻行为)，allowedTools 已清空"
         }
 
         return listOf(

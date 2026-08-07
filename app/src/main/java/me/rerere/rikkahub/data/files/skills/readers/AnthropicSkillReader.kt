@@ -43,13 +43,11 @@ class AnthropicSkillReader : SkillReader {
             else -> emptyList()
         }
 
-        val compatibility = buildString {
-            if ((fm["disable-model-invocation"] as? Boolean) == true) append("manual-only")
-            if ((fm["user-invocable"] as? Boolean) == false) {
-                if (isNotEmpty()) append(", ")
-                append("background-only")
-            }
-        }.ifBlank { null }
+        // rikkahub 原生 compatibility 仅识别 always / manual-only / null，
+        // 不要用逗号拼接多值，也不要写入原生不认识的 "background-only"。
+        val disableModelInvocation = (fm["disable-model-invocation"] as? Boolean) == true
+        val userInvocable = fm["user-invocable"]
+        val compatibility = if (disableModelInvocation) "manual-only" else null
 
         val basePath = input.relativePath.substringBeforeLast('/', missingDelimiterValue = "")
         val extraFiles = ReaderHelpers.collectExtraFiles(input.siblingFiles, basePath)
@@ -63,6 +61,9 @@ class AnthropicSkillReader : SkillReader {
         }
         if (fm["license"] != null) {
             warnings += "license 字段已忽略"
+        }
+        if (userInvocable == false) {
+            warnings += "user-invocable=false 无法映射到 rikkahub compatibility(原生不支持 background-only)，已忽略"
         }
 
         val skill = ImportedSkill(
