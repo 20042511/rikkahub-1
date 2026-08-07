@@ -55,33 +55,7 @@ jobs:
       - name: Write placeholder google-services.json
         run: |
           if [ ! -f app/google-services.json ]; then
-            cat > app/google-services.json <<'JSON'
-            {
-              "project_info": {
-                "project_number": "000000000000",
-                "project_id": "placeholder-00000",
-                "storage_bucket": "placeholder-00000.appspot.com"
-              },
-              "client": [
-                {
-                  "client_info": {
-                    "mobilesdk_app_id": "1:000000000000:android:0000000000000000",
-                    "android_client_info": {
-                      "package_name": "me.rerere.rikkahub"
-                    }
-                  },
-                  "oauth_client": [],
-                  "api_key": [
-                    { "current_key": "AIzaSy00placeholder0000000000000000000000000" }
-                  ],
-                  "services": {
-                    "appinvite_service": { "other_platform_oauth_client": [] }
-                  }
-                }
-              ],
-              "configuration_version": "1"
-            }
-            JSON
+            printf '%s' '{"project_info":{"project_number":"000000000000","project_id":"placeholder-00000","storage_bucket":"placeholder-00000.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000","android_client_info":{"package_name":"me.rerere.rikkahub"}},"oauth_client":[],"api_key":[{"current_key":"AIzaSy00placeholder0000000000000000000000000"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}' > app/google-services.json
             echo "Wrote placeholder google-services.json (no real Firebase config in this fork)"
           else
             echo "google-services.json already present, skipping"
