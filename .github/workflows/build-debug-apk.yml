@@ -1,0 +1,111 @@
+name: Build Debug APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: '要构建的分支/tag'
+        required: false
+        default: ''
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Determine ref
+        id: ref
+        run: |
+          if [ -n "${{ inputs.ref }}" ]; then
+            echo "ref=${{ inputs.ref }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+          ref: ${{ steps.ref.outputs.ref }}
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web-ui/pnpm-lock.yaml
+
+      - name: Install web-ui dependencies
+        working-directory: web-ui
+        run: pnpm install --frozen-lockfile
+
+      - name: Write placeholder google-services.json
+        run: |
+          if [ ! -f app/google-services.json ]; then
+            cat > app/google-services.json <<'JSON'
+            {
+              "project_info": {
+                "project_number": "000000000000",
+                "project_id": "placeholder-00000",
+                "storage_bucket": "placeholder-00000.appspot.com"
+              },
+              "client": [
+                {
+                  "client_info": {
+                    "mobilesdk_app_id": "1:000000000000:android:0000000000000000",
+                    "android_client_info": {
+                      "package_name": "me.rerere.rikkahub"
+                    }
+                  },
+                  "oauth_client": [],
+                  "api_key": [
+                    { "current_key": "AIzaSy00placeholder0000000000000000000000000" }
+                  ],
+                  "services": {
+                    "appinvite_service": { "other_platform_oauth_client": [] }
+                  }
+                }
+              ],
+              "configuration_version": "1"
+            }
+            JSON
+            echo "Wrote placeholder google-services.json (no real Firebase config in this fork)"
+          else
+            echo "google-services.json already present, skipping"
+          fi
+
+      - name: Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Gradle Build (Debug)
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rikkahub-debug-apk-${{ steps.ref.outputs.ref }}
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn
+          retention-days: 14
