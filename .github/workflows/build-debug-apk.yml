@@ -79,7 +79,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: rikkahub-debug-apk-${{ steps.ref.outputs.ref }}
+          name: rikkahub-debug-apk-${{ github.run_id }}
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: warn
           retention-days: 14
