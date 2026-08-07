@@ -210,7 +210,7 @@ class SkillsVM(
     /**
      * 候选 skill 文件检测：覆盖所有 Reader 可识别的格式。
      * 命名型(.mdc/.cursorrules/SKILL.md/CLAUDE.md/GEMINI.md)优先；
-     * 路径型(.clinerules/*.md 等)需要文件在特定目录下。
+     * 路径型(.clinerules 目录下的 .md 等)需要文件在特定目录下。
      */
     private fun findCandidateSkillFiles(paths: Collection<String>): List<String> {
         return paths.asSequence()

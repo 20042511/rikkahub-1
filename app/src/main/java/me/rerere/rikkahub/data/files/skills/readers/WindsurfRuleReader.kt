@@ -5,7 +5,7 @@ import me.rerere.rikkahub.data.files.skills.SkillNames
 import me.rerere.rikkahub.data.files.skills.SkillSourceFormat
 
 /**
- * Windsurf Rules：`.windsurf/rules/*.md`。
+ * Windsurf Rules：`.windsurf/rules` 目录下的 Markdown。
  *
  * frontmatter：
  * - trigger: always_on | glob | model_decision | manual

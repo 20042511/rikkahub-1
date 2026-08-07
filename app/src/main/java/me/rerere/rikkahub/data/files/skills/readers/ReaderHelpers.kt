@@ -32,7 +32,7 @@ internal object ReaderHelpers {
 
     /**
      * 解析 Cursor/Windsurf/Kiro/Copilot 的 globs/applyTo 字段：
-     * - 裸逗号分隔字符串 "src/**/*.ts, src/**/*.tsx"
+     * - 裸逗号分隔字符串 "src 下任意层级的 .ts, .tsx"
      * - YAML 数组 [a, b] 或 - item
      * 都转成 List<String>。
      */

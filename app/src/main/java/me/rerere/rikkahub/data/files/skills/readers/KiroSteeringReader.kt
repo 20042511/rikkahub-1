@@ -5,7 +5,7 @@ import me.rerere.rikkahub.data.files.skills.SkillNames
 import me.rerere.rikkahub.data.files.skills.SkillSourceFormat
 
 /**
- * Kiro Steering：`.kiro/steering/*.md`。
+ * Kiro Steering：`.kiro/steering` 目录下的 Markdown。
  *
  * frontmatter(官方字段名，见 https://kiro.dev/docs/steering/）：
  * - inclusion: always | fileMatch | manual | auto

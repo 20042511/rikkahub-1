@@ -15,7 +15,7 @@ import org.yaml.snakeyaml.Yaml
  */
 object SkillFrontmatterParser {
     private const val TAG = "SkillFrontmatterParser"
-    private val frontmatterEndRegex = Regex("""\r?\n---(?:\r?\n|$)"")
+    private val frontmatterEndRegex = Regex("""\r?\n---(?:\r?\n|$)""")
 
     /** 扁平化解析：所有值转为 String；List 用空格连接(兼容老的 allowed-tools 空格分隔)。 */
     fun parse(content: String): Map<String, String> {

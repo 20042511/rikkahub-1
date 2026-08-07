@@ -5,7 +5,7 @@ import me.rerere.rikkahub.data.files.skills.SkillNames
 import me.rerere.rikkahub.data.files.skills.SkillSourceFormat
 
 /**
- * Cline Rules：`.clinerules/*.md`。
+ * Cline Rules：`.clinerules` 目录下的 Markdown。
  *
  * 无标准 frontmatter 约定，整文件作为一个 skill。若文件恰好有 frontmatter，
  * 仍尝试解析 description(最佳努力)；body 用 extractBody。

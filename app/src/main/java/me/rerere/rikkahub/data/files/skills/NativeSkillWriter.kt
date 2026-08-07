@@ -12,11 +12,11 @@ object NativeSkillWriter {
     private const val DESCRIPTION_INLINE_LIMIT = 200
 
     /**
-     * @return relativePath -> content，至少含 "SKILL.md"
+     * @return relativePath -> content(bytes)，至少含 "SKILL.md"
      */
-    fun toSkillFiles(skill: ImportedSkill): Map<String, String> {
-        val files = LinkedHashMap<String, String>()
-        files["SKILL.md"] = buildSkillMd(skill)
+    fun toSkillFiles(skill: ImportedSkill): Map<String, ByteArray> {
+        val files = LinkedHashMap<String, ByteArray>()
+        files["SKILL.md"] = buildSkillMd(skill).toByteArray(Charsets.UTF_8)
         for ((path, content) in skill.extraFiles) {
             val safe = sanitizeRelativePath(path) ?: continue
             files[safe] = content

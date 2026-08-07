@@ -198,7 +198,7 @@ class SkillManager(
      */
     fun importSkill(imported: ImportedSkill): SkillMetadata? {
         val files = NativeSkillWriter.toSkillFiles(imported)
-        if (!saveSkillFilesAtomically(imported.name, files)) {
+        if (!saveSkillFileBytesAtomically(imported.name, files)) {
             return null
         }
         val skillDir = resolveSkillDir(imported.name) ?: return null

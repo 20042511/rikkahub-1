@@ -5,11 +5,11 @@ import me.rerere.rikkahub.data.files.skills.SkillNames
 import me.rerere.rikkahub.data.files.skills.SkillSourceFormat
 
 /**
- * GitHub Copilot Instructions：`.github/instructions/*.instructions.md`
+ * GitHub Copilot Instructions：`.github/instructions` 下的 `.instructions.md`
  * (或任何 `.instructions.md`)。
  *
  * frontmatter：
- * - applyTo: glob 字符串(如 "**/*.ts")
+ * - applyTo: glob 字符串(如 `**` 下任意层级的 `.ts`)
  * - description / title(可选)
  *
  * 映射：applyTo → allowedTools
