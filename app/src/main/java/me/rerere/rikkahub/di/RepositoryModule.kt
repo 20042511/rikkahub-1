@@ -32,6 +32,10 @@ val repositoryModule = module {
     }
 
     single {
+        KnowledgeRepository(get(), get())
+    }
+
+    single {
         GenMediaRepository(get())
     }
 

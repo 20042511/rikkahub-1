@@ -1,7 +1,10 @@
 package me.rerere.rikkahub.data.ai.tools.local
 
 import android.content.Context
+import kotlinx.serialization.json.Json
 import me.rerere.ai.core.Tool
+import me.rerere.rikkahub.data.ai.tools.buildKnowledgeTools
+import me.rerere.rikkahub.data.repository.KnowledgeRepository
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.event.AppEventBus
 import me.rerere.tts.provider.TTSManager
@@ -11,6 +14,8 @@ class LocalTools(
     private val eventBus: AppEventBus,
     private val ttsManager: TTSManager,
     private val settingsStore: SettingsStore,
+    private val json: Json,
+    private val knowledgeRepository: KnowledgeRepository,
 ) {
     val javascriptTool by lazy { buildJavascriptTool() }
 
@@ -27,6 +32,8 @@ class LocalTools(
     val calendarQueryTool by lazy { buildCalendarQueryTool(context) }
 
     val calendarCreateTool by lazy { buildCalendarCreateTool(context) }
+
+    val knowledgeTools by lazy { buildKnowledgeTools(json, knowledgeRepository) }
 
     fun getTools(options: List<LocalToolOption>): List<Tool> {
         val tools = mutableListOf<Tool>()
@@ -51,6 +58,9 @@ class LocalTools(
         if (options.contains(LocalToolOption.Calendar)) {
             tools.add(calendarQueryTool)
             tools.add(calendarCreateTool)
+        }
+        if (options.contains(LocalToolOption.KnowledgeBase)) {
+            tools.addAll(knowledgeTools)
         }
         return tools
     }
